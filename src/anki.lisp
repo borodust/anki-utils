@@ -191,7 +191,7 @@
 ;;; DECK
 ;;;
 (defclass anki-deck (identified named modifiable)
-  ((description :initarg :description :initform (error ":description missing") :reader description-of)
+  ((description :initarg :description :initform "" :reader description-of)
    (card-map :initform (make-hash-table))
    (config :initarg :config :initform nil :reader config-of)))
 
@@ -201,6 +201,12 @@
     (unless config
       (setf config (make-instance 'anki-deck-config :id (id-of this)
                                                     :name (name-of this))))))
+
+
+(defun make-default-deck ()
+  (make-instance 'anki-deck
+                 :id 1
+                 :name "Default"))
 
 
 (defmethod to-alist ((this anki-deck))
@@ -384,7 +390,7 @@ FROM cards")))
         (card-table (make-hash-table :test 'equal))
         (note-table (make-hash-table :test 'equal))
         sql)
-    (loop for deck in (decks-of this)
+    (loop for deck in (append (list (make-default-deck)) (decks-of this))
           do (setf (gethash (id-of deck) deck-table) (to-alist deck)
                    (gethash (id-of deck) config-table) (to-alist (config-of deck)))
              (docards (card deck)
